@@ -12,7 +12,6 @@ void maximo_vetores(int vet1[], int vet2[], int N) {
     for (int i = 0; i < N; i++) {
         if (vet2[i] > vet1[i]) {
             vet1[i] = vet2[i];
-
         } 
         cout << vet1[i]; 
         cout << "\n";

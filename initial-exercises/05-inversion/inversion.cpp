@@ -7,9 +7,13 @@ vetor original: [A, B, C, D, E]
 vetor após a chamada do método: [E, D, C, B, A]
 */
 void inversao(int vet[], int N) {
-    int inverted_array[N];
-    for (int i = N-1; i >= 0; i--) {
-        inverted_array[N-i-1] = vet[i];
+    int temp;
+    for (int i = 0; i < N/2; i++) {
+        temp = vet[i];
+        vet[i] = vet[N-i-1];
+        vet[N-i-1] = temp;
+    }
+    for (int i = 0; i < N; i++) {
         cout << vet[i];
         cout << "\n";
     }

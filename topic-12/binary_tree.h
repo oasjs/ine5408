@@ -25,7 +25,7 @@ public:
 
 private:
     struct Node {
-        Node(const T& data_);
+        explicit Node(const T& data_);
 
         T data;
         Node* left;
@@ -33,7 +33,7 @@ private:
 
         void insert(const T& data_);
 
-        bool remove(const T& data_);
+        Node* remove(const T& data_);
 
         bool contains(const T& data_) const;
 
@@ -46,7 +46,6 @@ private:
         bool has_left() const;
 
         bool has_right() const;
-
     };
 
     Node* root;
@@ -100,83 +99,16 @@ void bt::Node::insert(const T& data_) {
     }
 }
 
-// Nota: Não dá para fazer isso com recursão, pois não é possível!!!
-tt
-bool bt::Node::remove(const T& data_) {
-    if (data_ < data && has_left()) {
-        // If left is to be removed
-        if (left->data == data_) {
-            Node* replacement = left;
-            if (left->has_left() and left->has_right()) {
-
-                Node* father = left;
-                // Father is the node before the newRoot
-                while (father->has_right() && father->right->has_right())
-                    father = father->right;
-
-                replacement = father->right;
-                left->data = replacement->data;
-
-                if (replacement->has_left())
-                    father->right = replacement->left;
-
-            } else if(left->has_left())
-                left = left->left;
-            else if(left->has_right())
-                left = left->right;
-
-            std::cout << "Deleting " << replacement->data << std::endl;
-            delete replacement;
-            return true;
-        } else {
-            return remove(left->data);
-        }
-    } else if (data_ > data && has_right()) {
-        // If right is to be removed
-        if (right->data == data_) {
-            Node* replacement = right;
-            if (right->has_left() && right->has_right()) {
-
-                Node* father = right;
-                // Father is the node before the newRoot
-                while (father->has_left() && father->left->has_left())
-                    father = father->left;
-
-                replacement = father->left;
-                right->data = replacement->data;
-
-                if (replacement->has_right())
-                    father->left = replacement->right;
-
-            } else if (right->has_left())
-                right = right->left;
-            else if (right->has_right())
-                right = right->right;
-
-            std::cout << "Deleting " << replacement->data << std::endl;
-            delete replacement;
-            return true;
-        } else {
-            return remove(right->data);
-        }
-    } else {
-        // Data is not in the tree
-        return false;
-    }
-}
-
 tt
 bool bt::Node::contains(const T& data_) const {
     if (data_ == data) {
         return true;
-    }
-    else if (data_ < data) {
+    } else if (data_ < data) {
         if (!has_left())
             return false;
         else
             return left->contains(data_);
-    }
-    else {
+    } else {
         if (!has_right())
             return false;
         else
@@ -206,7 +138,7 @@ void bt::Node::in_order(ArrayList<T>& v) const {
 
 tt
 void bt::Node::post_order(ArrayList<T>& v) const {
-    /* right, root, left */
+    /* left, right, root */
     if (has_left())
         left->post_order(v);
     if (has_right())
@@ -218,7 +150,10 @@ void bt::Node::post_order(ArrayList<T>& v) const {
 /* BINART TREE */
 
 tt
-bt::~BinaryTree() {}
+bt::~BinaryTree() {
+    root = nullptr;
+    size_ = 0u;
+}
 
 tt
 void bt::insert(const T& data) {
@@ -226,45 +161,82 @@ void bt::insert(const T& data) {
         root = new Node(data);
     else
         root->insert(data);
-    
     ++size_;
 }
 
 tt
 void bt::remove(const T& data) {
-    if (!empty()) {
-        if (root->data == data) {
-        // If root is to be deleted
-            Node* replacement = root;
-            if (root->has_left() && root->has_right()) {
+    if (empty())
+        return;
 
-                Node* father = root->right;
-                // Father is the node before the newRoot
-                while (father->has_left() && father->left->has_left()) 
-                    father = father->left;
+    Node* parent = root;
+    Node* removedNode;
+    if (root->data != data) {
+        // Looks for the node to be removed
+        while (removedNode->data != data && removedNode != nullptr) {
+            if (data < parent->data) {
+                if (parent->has_left()) {
+                    if (data == parent->left->data) {
+                        removedNode = parent->left;
+                    } else {
+                        parent = parent->left;
+                    }
+                } else {
+                    removedNode = nullptr;
+                }
+            } else if (data > parent->data) {
+                if (parent->has_right()) {
+                    if (data == parent->right->data) {
+                        removedNode = parent->right;
+                    } else {
+                        parent = parent->right;
+                    }
+                } else {
+                    removedNode = nullptr;
+                }
+            }
+        }
+    } else {
+        removedNode = root;
+    }
 
-                replacement = father->left;
-                root->data = replacement->data;
+    if (removedNode == nullptr)
+        return;
 
-                if (replacement->has_right())
-                    father->left = replacement->right;
-            } else if(root->has_left())
-                root = root->left;
-            else if(root->has_right())
-                root = root->right;
+    if (removedNode->has_left() && removedNode->has_right()) {
+        Node* replacementParent = removedNode;
+        while (replacementParent->has_left() &&
+                replacementParent->left->has_left())
+            replacementParent = replacementParent->left;
 
-            delete replacement;
-            --size_;
+        Node* replacement = replacementParent->left;
+        removedNode->data = replacement->data;
+
+        if (replacement->has_right())
+            replacementParent->left = replacement->right;
+
+        delete replacement;
+        --size_;
+        return;
+    }
+    if (removedNode == root) {
+        root = root->has_left() ? root->left : root->right;
+    } else {
+        if (removedNode->data < parent->data) {
+            parent->left = removedNode->has_left() ? removedNode->left
+                                                : removedNode->right;
         } else {
-            bool removed = root->remove(data);
-            if (removed)
-                --size_;
+            parent->right = removedNode->has_left() ? removedNode->left
+                                                : removedNode->right;
         }
     }
+    delete removedNode;
+    --size_;
+
 }
 
 tt
-bool bt::contains(const T& data) const{
+bool bt::contains(const T& data) const {
     if (empty())
         return false;
     else
@@ -272,7 +244,7 @@ bool bt::contains(const T& data) const{
 }
 
 tt
-bool bt::empty() const{
+bool bt::empty() const {
     if (size_ == 0u)
         return true;
     else

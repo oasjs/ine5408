@@ -37,3 +37,6 @@ tests*
 
 # vscode
 .vscode
+
+# Others
+topic-7/linked_stack.h

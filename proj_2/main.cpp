@@ -70,20 +70,17 @@ void checkWords(vector<string>* words,  Trie* t) {
 
     for (int i = 0; i < words->size(); i++) {
         string word = words->at(i);
-        Trie::Node* node = t->get(word);
+        pair<int, int> word_info = t->get(word);
+        int pos = word_info.first;
+        int len = word_info.second;
 
-        if (node != nullptr) {
-
+        // Se len for -1, a palavra buscada não existe na Trie
+        if (len != -1) {
             int n_prefixed = t->getNumOfPrefixedWords(word);
             cout << word << " is prefix of " << n_prefixed << " words" << endl;
 
-            if (node->len > 0) {
-
-                int pos = node->pos;
-                int len = node->len;
-                cout << word << " is at (" << node->pos << "," << node->len << ")" << endl;
-
-            }
+            if (len > 0)
+                cout << word << " is at (" << pos << "," << len << ")" << endl;
         } else
             cout << word << " is not prefix" << endl;
     }

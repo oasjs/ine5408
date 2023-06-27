@@ -3,12 +3,8 @@
 namespace structures {
 
 class Trie {
- public:
-    Trie();
-
-    ~Trie();
-
-    struct Node {
+  private:
+    struct Node { // Nodo da True
         Node();
 
         Node*   chd[26];
@@ -18,16 +14,20 @@ class Trie {
         int prefixed();
     };
 
-    void insert(std::string word, const int& p, const int& l);
-
-    Node* get(const std::string word);
-
-    int getNumOfPrefixedWords(const std::string word_);
-
-
- private:
     Node* root;
 
+ public:
+    Trie(); // Construtor
+    ~Trie(); // Destrutor
+
+    // Insere uma palavra na Trie.
+    void insert(std::string word, const int& p, const int& l);
+
+    // Procura pela palavra na Trie. Retorna um par<posicao, comprimento> caso a palavra exista na Trie. Caso contrario retorna um par<-1, -1>
+    std::pair<int, int> get(const std::string word);
+
+    // Retorna o número de palavras prefixadas pela palavra fornecida.
+    int getNumOfPrefixedWords(const std::string word_);
 };
 
 }   // namespace structures
@@ -44,7 +44,6 @@ Trie::~Trie() {
 }
 
 void Trie::insert(const std::string word, const int& p, const int& l) {
-
     Node* node = root;
     for (std::size_t i = 0; i < word.length(); i++) {
         int index = word[i] - 'a';
@@ -56,20 +55,25 @@ void Trie::insert(const std::string word, const int& p, const int& l) {
     node->len = l;
 }
 
-Trie::Node* Trie::get(const std::string word) {
-
+std::pair<int, int> Trie::get(const std::string word) {
     Node* node = root;
     for (std::size_t i = 0; i < word.length() && node != nullptr; i++) {
         int index = word[i] - 'a';
         node = node->chd[index];
     }
-    return node;
+    std::pair<int, int> pair = node == nullptr ? std::make_pair(-1,-1)
+                                        : std::make_pair(node->pos, node->len);
+    return pair;
 }
 
-int Trie::getNumOfPrefixedWords(const std::string word_) {
-    Node* word = get(word_);
-    if (word == nullptr) return 0;
-    return word->prefixed();
+int Trie::getNumOfPrefixedWords(const std::string word) {
+    Node* node = root;
+    for (std::size_t i = 0; i < word.length() && node != nullptr; i++) {
+        int index = word[i] - 'a';
+        node = node->chd[index];
+    }
+    if (node == nullptr) return 0;
+    return node->prefixed();
 }
 
 

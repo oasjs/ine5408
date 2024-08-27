@@ -4,7 +4,7 @@ namespace structures {
 
 class Trie {
   private:
-    struct Node { // Nodo da True
+    struct Node { // Nodo da Trie
         Node();
 
         Node*   chd[26];
@@ -23,7 +23,8 @@ class Trie {
     // Insere uma palavra na Trie.
     void insert(std::string word, const int& p, const int& l);
 
-    // Procura pela palavra na Trie. Retorna um par<posicao, comprimento> caso a palavra exista na Trie. Caso contrario retorna um par<-1, -1>
+    // Procura pela palavra na Trie. Retorna um par<posicao, comprimento> caso
+    // a palavra exista na Trie. Caso contrario retorna um par<-1, -1>
     std::pair<int, int> get(const std::string word);
 
     // Retorna o número de palavras prefixadas pela palavra fornecida.

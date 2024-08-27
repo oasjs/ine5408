@@ -32,6 +32,8 @@ int main(int argc, char* argv[]) {
 
     checkWords(words, t);
 
+    delete t;
+
     return 0;
 }
 

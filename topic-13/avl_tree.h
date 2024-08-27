@@ -34,6 +34,7 @@ private:
         int height_;
         Node* left;
         Node* right;
+        Node* parent;
 
         void insert(const T& data_);
 
@@ -82,13 +83,13 @@ int structures::AVLTree<T>::height() const {
 }
 
 template<typename T>
-AVLTree<T>::~AVLTree() {
+structures::AVLTree<T>::~AVLTree() {
     root = nullptr;
-    size_ = 0u
+    size_ = 0u;
 }
 
 template<typename T>
-void AVLTree<T>::insert(const T& data) {
+void structures::AVLTree<T>::insert(const T& data) {
     if (root == nullptr) {
         root = new Node(data);
     } else {
@@ -98,10 +99,10 @@ void AVLTree<T>::insert(const T& data) {
 }
 
 template<typename T>
-void AVLTree<T>::remove(const T& data) {}
+void structures::AVLTree<T>::remove(const T& data) {}
 
 template<typename T>
-bool AVLTree<T>::contains(const T& data) const {
+bool structures::AVLTree<T>::contains(const T& data) const {
     if (empty())
         return false;
     else
@@ -109,7 +110,7 @@ bool AVLTree<T>::contains(const T& data) const {
 }
 
 template<typename T>
-bool AVLTree<T>::empty() const {
+bool structures::AVLTree<T>::empty() const {
     if (size_ == 0u)
         return true;
     else
@@ -117,38 +118,41 @@ bool AVLTree<T>::empty() const {
 }
 
 template<typename T>
-std::size_t AVLTree<T>::size() const {
+std::size_t structures::AVLTree<T>::size() const {
     return size_;
 }
 
 template<typename T>
-ArrayList<T> AVLTree<T>::pre_order() const {
+structures::ArrayList<T> structures::AVLTree<T>::pre_order() const {
     ArrayList<T> v{};
     if (!empty()) {
         root->pre_order(v);
     }
+    return v;
 }
 
 template<typename T>
-ArrayList<T> AVLTree<T>::in_order() const {
+structures::ArrayList<T> structures::AVLTree<T>::in_order() const {
     ArrayList<T> v{};
     if (!empty()) {
         root->in_order(v);
     }
+    return v;
 }
 
 template<typename T>
-ArrayList<T> AVLTree<T>::post_order() const {
+structures::ArrayList<T> structures::AVLTree<T>::post_order() const {
     ArrayList<T> v{};
     if (!empty()) {
         root->post_order(v);
     }
+    return v;
 }
 
 // -----
 
 template<typename T>
-AVLTree<T>::Node::Node(const T& data_) {
+structures::AVLTree<T>::Node::Node(const T& data_) {
     data = data_;
     height_ = 0u;
     left = nullptr;
@@ -156,41 +160,44 @@ AVLTree<T>::Node::Node(const T& data_) {
 }
 
 template<typename T>
-void AVLTree<T>::Node::insert(const T& data_) {
+void structures::AVLTree<T>::Node::insert(const T& data_) {
     if (data_ < data) {
         if (left == nullptr) {
             left = new Node(data_);
+            left->parent = this;
         } else {
             left->insert(data_);
         }
     } else {
         if (right == nullptr) {
             right = new Node(data_);
+            right->parent = this;
         } else {
             right->insert(data_);
         }
     }
+    Node* newRoot = nullptr;
     updateHeight();
     if (left->height() - right->height() == 2) {
         if (data_ < left->data) {
-            simpleLeft();
+            newRoot = simpleLeft();
         } else {
-            doubleLeft();
+            newRoot = doubleLeft();
         }
     } else if (right->height() - left->height() == 2) {
         if (data_ > right->data) {
-            simpleRight();
+            newRoot = simpleRight();
         } else {
-            doubleRight();
+            newRoot = doubleRight();
         }
     }
 }
 
 template<typename T>
-bool AVLTree<T>::Node::remove(const T& data_) {}
+bool structures::AVLTree<T>::Node::remove(const T& data_) {}
 
 template<typename T>
-bool AVLTree<T>::Node::contains(const T& data_) const {
+bool structures::AVLTree<T>::Node::contains(const T& data_) const {
     if (data_ == data) {
         return true;
     } else if (data_ < data) {
@@ -209,7 +216,7 @@ bool AVLTree<T>::Node::contains(const T& data_) const {
 }
 
 template<typename T>
-void AVLTree<T>::Node::updateHeight() {
+void structures::AVLTree<T>::Node::updateHeight() {
     int left_height = -1;
     int right_height = -1;
     if (left != nullptr) {
@@ -222,19 +229,63 @@ void AVLTree<T>::Node::updateHeight() {
 }
 
 template<typename T>
-typename AVLTree<T>::Node* AVLTree<T>::Node::simpleLeft() {}
+typename structures::AVLTree<T>::Node* AVLTree<T>::Node::simpleLeft() {
+    Node* new_root = left;
+    left = new_root->right;
+    new_root->right = this;
+    updateHeight();
+    new_root->updateHeight();
+
+    // Update parent's pointer to the new root
+    if (parent != nullptr) {
+        if (parent->left == this) {
+            parent->left = new_root;
+        } else {
+            parent->right = new_root;
+        }
+    }
+    new_root->parent = parent;
+    parent = new_root;
+
+    return new_root;
+}
 
 template<typename T>
-typename AVLTree<T>::Node* AVLTree<T>::Node::simpleRight() {}
+typename structures::AVLTree<T>::Node* AVLTree<T>::Node::simpleRight() {
+    Node* new_root = right;
+    right = new_root->left;
+    new_root->left = this;
+    updateHeight();
+    new_root->updateHeight();
+
+    // Update parent's pointer to the new root
+    if (parent != nullptr) {
+        if (parent->left == this) {
+            parent->left = new_root;
+        } else {
+            parent->right = new_root;
+        }
+    }
+    new_root->parent = parent;
+    parent = new_root;
+
+    return new_root;
+}
 
 template<typename T>
-typename AVLTree<T>::Node* AVLTree<T>::Node::doubleLeft() {}
+typename structures::AVLTree<T>::Node* AVLTree<T>::Node::doubleLeft() {
+    left = left->simpleRight();
+    return simpleLeft();
+}
 
 template<typename T>
-typename AVLTree<T>::Node* AVLTree<T>::Node::doubleRight() {}
+typename structures::AVLTree<T>::Node* AVLTree<T>::Node::doubleRight() {
+    right = right->simpleLeft();
+    return simpleRight();
+}
 
 template<typename T>
-void AVLTree<T>::Node::pre_order(ArrayList<T>& v) const {
+void structures::AVLTree<T>::Node::pre_order(ArrayList<T>& v) const {
     v.push_back(data);
     if (left != nullptr) {
         left->pre_order(v);
@@ -245,7 +296,7 @@ void AVLTree<T>::Node::pre_order(ArrayList<T>& v) const {
 }
 
 template<typename T>
-void AVLTree<T>::Node::in_order(ArrayList<T>& v) const {
+void structures::AVLTree<T>::Node::in_order(ArrayList<T>& v) const {
     if (left != nullptr) {
         left->in_order(v);
     }
@@ -256,7 +307,7 @@ void AVLTree<T>::Node::in_order(ArrayList<T>& v) const {
 }
 
 template<typename T>
-void AVLTree<T>::Node::post_order(ArrayList<T>& v) const {
+void structures::AVLTree<T>::Node::post_order(ArrayList<T>& v) const {
     if (left != nullptr) {
         left->post_order(v);
     }
